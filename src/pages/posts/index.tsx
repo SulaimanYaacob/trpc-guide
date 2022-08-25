@@ -6,7 +6,7 @@ function PostListingPage() {
   const { data, isLoading } = trpc.useQuery(["posts.posts"]);
 
   if (isLoading) {
-    return <p>Loading...</p>;
+    return <p>Fetching from database...</p>;
   }
 
   return (
@@ -15,6 +15,12 @@ function PostListingPage() {
         return (
           <article key={post.id}>
             <p>{post.title}</p>
+            <p>
+              Tags:
+              {post.PostTag.map((tag) => {
+                return ` [${tag.tagName}] `;
+              })}
+            </p>
             <Link href={`/posts/${post.id}`}>Read post</Link>
           </article>
         );

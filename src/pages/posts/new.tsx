@@ -1,34 +1,67 @@
 import { useRouter } from "next/router";
-import { useForm } from "react-hook-form";
+import { useState } from "react";
 import { CreatePostInput } from "../../schema/post.schema";
 import { trpc } from "../../utils/trpc";
 
 function CreatePostPage() {
-  const { handleSubmit, register } = useForm<CreatePostInput>();
+  const [values, setValues] = useState<CreatePostInput>({
+    title: "",
+    body: "",
+    tags: [],
+  });
+
   const router = useRouter();
 
-  const { mutate, error } = trpc.useMutation(["posts.create-post"], {
+  const { mutate, error, isLoading } = trpc.useMutation(["posts.create-post"], {
     onSuccess: ({ id }) => {
+      alert("update success");
       router.push(`/posts/${id}`);
+    },
+    onError: () => {
+      alert("this is error");
     },
   });
 
-  function onSubmit(values: CreatePostInput) {
+  const handleOnClick = () => {
     mutate(values);
-  }
+    setValues({
+      title: "",
+      body: "",
+      tags: [],
+    });
+  };
 
+  if (isLoading) {
+    return <p>Updating databse</p>;
+  }
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <div>
       {error && error.message}
 
       <h1>Create posts</h1>
-
-      <input type="text" placeholder="Your post title" {...register("title")} />
+      <input
+        type="text"
+        placeholder="Your post title"
+        value={values.title}
+        onChange={(e) => setValues({ ...values, title: e.target.value })}
+      />
       <br />
-      <textarea placeholder="Your post title" {...register("body")} />
+      <textarea
+        placeholder="Your post body"
+        value={values.body}
+        onChange={(e) => setValues({ ...values, body: e.target.value })}
+      />
       <br />
-      <button>Create post</button>
-    </form>
+      <input
+        type="text"
+        placeholder="Enter Tags"
+        value={values.tags}
+        onChange={(e) =>
+          setValues({ ...values, tags: e.target.value.split(",") })
+        }
+      />
+      <button onClick={handleOnClick}>Create post</button>
+    </div>
   );
 }
 

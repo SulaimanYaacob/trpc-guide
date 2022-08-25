@@ -16,12 +16,28 @@ export const postRouter = createRouter()
         });
       }
 
+      const createdTags = await ctx.prisma.tag.createMany({
+        data: input.tags.map((tag) => ({
+          name: tag,
+        })),
+      });
+
+      console.log(createdTags.count, input.tags);
+
       const post = await ctx.prisma.post.create({
         data: {
-          ...input,
+          title: input.title,
+          body: input.body,
           user: {
             connect: {
               id: ctx.user?.id,
+            },
+          },
+          PostTag: {
+            createMany: {
+              data: input.tags.map((tag) => ({
+                tagName: tag,
+              })),
             },
           },
         },
@@ -32,16 +48,20 @@ export const postRouter = createRouter()
   })
   .query("posts", {
     resolve({ ctx }) {
-      return ctx.prisma.post.findMany();
+      return ctx.prisma.post.findMany({
+        include: { PostTag: true },
+      });
     },
   })
   .query("single-post", {
     input: getSinglePostSchema,
-    resolve({ input, ctx }) {
-      return ctx.prisma.post.findUnique({
+    async resolve({ input, ctx }) {
+      const data = await ctx.prisma.post.findUnique({
         where: {
           id: input.postId,
         },
+        include: { PostTag: true },
       });
+      return data;
     },
   });

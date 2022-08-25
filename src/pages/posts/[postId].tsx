@@ -21,6 +21,11 @@ function SinglePostPage() {
     <div>
       <h1>{data?.title}</h1>
       <p>{data?.body}</p>
+      <p>
+        {data?.PostTag.map((tag) => {
+          return <p>{tag.tagName}</p>;
+        })}
+      </p>
     </div>
   );
 }
